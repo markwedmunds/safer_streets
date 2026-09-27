@@ -67,6 +67,7 @@ flowchart TD
 - **Retry in one place.** Riverpod's built-in retry is switched on for `areaReportProvider` only and off for everything else. The policy reads the failure type, so "what is retryable" lives in one function.
 - **This cache.** The data changes monthly, so a successful report is kept in memory for 15 minutes. Failures are never cached, and nothing is persisted.
 - **Two parallel requests for the two months.** This halves the wait on slow areas and stays well inside the rate limit.
+- **Material 3, lightly themed, not a design system.** One `ThemeData` from a navy seed with a few colour and component overrides, and Inter bundled so text never waits on a font download. Bars are plain widgets, not a chart library. The wording and bar lengths are worked out in the state, so widgets only lay them out.
 
 ## Testing and QA
 
@@ -94,8 +95,8 @@ With more time I'd check next:
 
 | Input or action | Expected |
 | --- | --- |
-| First load | Example chips: Warrington, Cardiff, Belfast, Edinburgh; tapping one fills the field and searches |
-| `wa11uh`, Enter | Field shows `WA1 1UH`; Warrington, a trend icon and a heading such as "Fewer crimes than in June", both totals, categories largest first |
+| "Or try" links | Warrington, Cardiff, Belfast, Edinburgh: each fills the field and searches |
+| `wa11uh`, Enter (or Check) | Field shows `WA1 1UH`; "Fewer crimes than in June", 456 with "↓ 9% fewer" and two month bars, a summary line, then 14 categories largest first with bars and "↓ 10 fewer" style changes |
 | `bt15gs`, Enter, straight after | No click needed on desktop: focus stays in the field; Belfast results |
 | `EH1 1YZ` | Not covered message; no request to data.police.uk (DevTools Network) |
 | `IM1 1AE` | Not covered message (no coordinates for the Isle of Man) |
