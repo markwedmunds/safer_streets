@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import '../domain/failure.dart';
 import '../domain/postcode.dart';
 
-/// Isle of Man and Channel Islands postcodes have no coordinates.
 typedef Place = ({String country, String name, num? latitude, num? longitude});
 
 class PostcodesApi {
@@ -11,7 +10,6 @@ class PostcodesApi {
 
   final Dio _dio;
 
-  /// Returns null if the postcode doesn't exist.
   Future<Place?> lookup(Postcode postcode, CancelToken cancelToken) async {
     final response = await _dio.get<Object?>(
       'https://api.postcodes.io/postcodes/${postcode.value.replaceAll(' ', '')}',

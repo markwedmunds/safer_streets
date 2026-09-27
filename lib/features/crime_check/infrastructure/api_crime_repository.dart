@@ -28,6 +28,7 @@ class ApiCrimeRepository implements CrimeRepository {
       final place = await _postcodes.lookup(postcode, cancelToken);
       if (place == null) return const AreaNotFound();
       if (!_covered.contains(place.country)) return const AreaNotCovered();
+
       final latitude = place.latitude;
       final longitude = place.longitude;
       if (latitude == null || longitude == null) throw const BadData();
@@ -42,10 +43,12 @@ class ApiCrimeRepository implements CrimeRepository {
           cancelToken: cancelToken,
         ),
       );
+
       final [thisMonth, lastMonth] = await Future.wait([
         countsFor(latest),
         countsFor(previous),
       ]);
+
       return AreaFound(
         AreaCrime(
           locationName: place.name,

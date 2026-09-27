@@ -54,14 +54,11 @@ class CrimeCheckViewModel extends _$CrimeCheckViewModel {
     if (postcode == null) return Idle(invalidInput: _invalidInput);
 
     return switch (ref.watch(areaReportProvider(postcode))) {
-      // Before errors: a retry, or Try again, is loading with the last error
-      // still attached.
       AsyncValue(isLoading: true) || AsyncLoading() => const Loading(),
       AsyncData(value: AreaFound(:final crime)) => Results(crime, postcode),
       AsyncData(value: AreaNotCovered()) => const NotCovered(),
       AsyncData(value: AreaNotFound()) => const NotFound(),
       AsyncError(error: final AppFailure failure) => Failed(failure, postcode),
-      // Anything else is a bug, so let it surface.
       AsyncError(:final error, :final stackTrace) => Error.throwWithStackTrace(
         error,
         stackTrace,
@@ -69,7 +66,6 @@ class CrimeCheckViewModel extends _$CrimeCheckViewModel {
     };
   }
 
-  /// Returns the postcode as understood, or null if [input] isn't one.
   Postcode? search(String input) {
     final postcode = Postcode.tryParse(input);
     // Searching the failed postcode again is Try again: ask afresh.

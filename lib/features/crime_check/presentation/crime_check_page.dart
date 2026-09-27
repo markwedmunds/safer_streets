@@ -22,7 +22,6 @@ class _CrimeCheckPageState extends ConsumerState<CrimeCheckPage> {
     super.dispose();
   }
 
-  /// Searches, then shows the postcode as it was understood, e.g. `WA1 1UH`.
   void _search(String input) {
     final text =
         ref.read(crimeCheckViewModelProvider.notifier).search(input)?.value ??
