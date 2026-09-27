@@ -2,7 +2,7 @@
 
 Type a UK postcode and see whether street crime nearby went up or down last month, with the totals for both months and each category's change. One screen, one question, answered plainly.
 
-**Track 02, UK Crime & Safety Explorer**, using [data.police.uk](https://data.police.uk/docs/) for crime and [postcodes.io](https://postcodes.io) to turn a postcode into coordinates. Both are free and keyless. I picked this track because its data is messy in useful ways: monthly releases, slow queries for busy areas, whole countries missing and a strict CORS setup.
+**Track 02, UK Crime & Safety Explorer**, using [data.police.uk](https://data.police.uk/docs/) for crime and [postcodes.io](https://postcodes.io) to turn a postcode into coordinates. The crimes endpoint only accepts a latitude and longitude, so postcodes.io is a required first step rather than a second data source. Both are free and keyless. I picked this track because its data is messy in useful ways: monthly releases, slow queries for busy areas, whole countries missing and a strict CORS setup.
 
 ## Run and test
 
@@ -77,6 +77,7 @@ The tests cover what would do damage if it broke, replaying real API responses r
 - Crime counting: a real response is counted by category; an unreadable payload is `BadData`, never "no crime". The 5% "about the same" rule is covered too.
 - Failure mapping: 404, 429, 503, 5xx and a connection error each become the right failure.
 - Repository: loads two months for `WA1 1UH` sending **no request headers**; Scotland is not covered, with no police request.
+- Result wording: the percentage change, its rounding, the summary line, each category's change, and the no-crime case.
 - Widget: typing a postcode and pressing Enter shows the heading.
 
 To check the tests guard what they claim, I broke the code on purpose (added an `Accept` header, removed the country check, removed the 503 guard) and confirmed the matching test failed each time.
@@ -111,7 +112,7 @@ With more time I'd check next:
 
 - Crime is counted within a mile of the postcode's centre, as the police API defines it. Locations are anonymised to nearby points.
 - One month against the last is noisy. The 5% threshold is a judgement call. Next: a 12-month trend.
-- Areas with over 10,000 crimes a month can't be shown, and the busiest areas that can take about 12s, close to the 15s timeout. Next: query a smaller custom area.
+- Areas with over 10,000 crimes a month can't be shown, and the busiest areas that can be shown take about 12s, close to the 15s timeout. Next: query a smaller custom area.
 - On GitHub Pages the wasm renderer runs single-threaded, because Pages can't send the cross-origin isolation headers. It logs a console warning.
 - Loading is a spinner and an honest hint. Next: a skeleton in the shape of the results, and loading steps driven by real progress from the repository rather than a timer.
 - Not done: accessibility review, localisation, persistence, error reporting, and browser E2E tests in CI.
