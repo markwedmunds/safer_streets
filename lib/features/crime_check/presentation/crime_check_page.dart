@@ -151,6 +151,7 @@ class _Results extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final crime = results.crime;
+    final categories = results.categories;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -171,15 +172,19 @@ class _Results extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 24),
-        _Row(
-          'By category',
-          results.thisMonth,
-          'Change',
-          style: theme.textTheme.labelLarge,
-        ),
-        const Divider(),
-        for (final row in results.categories)
-          _Row(row.category, row.count, row.change),
+        if (categories.isEmpty)
+          const Text('No street crime was recorded near here in either month.')
+        else ...[
+          _Row(
+            'By category',
+            results.thisMonth,
+            'Change',
+            style: theme.textTheme.labelLarge,
+          ),
+          const Divider(),
+          for (final row in categories)
+            _Row(row.category, row.count, row.change),
+        ],
       ],
     );
   }
