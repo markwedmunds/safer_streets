@@ -138,28 +138,59 @@ class _CrimeCheckPageState extends ConsumerState<CrimeCheckPage> {
             ),
             if (state is! Idle)
               _Band(
-                child: switch (state) {
-                  Idle() => const SizedBox.shrink(),
-                  Loading() => const Center(child: CircularProgressIndicator()),
-                  Results() => _Results(state),
-                  NotCovered() => const _Message(
-                    Icons.info_outline,
-                    "Not covered: this data isn't published for Scotland, "
-                    'the Isle of Man or the Channel Islands.',
+                child: AnimatedSwitcher(
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 300),
+                  // Out, then in: overlapping text is hard to read.
+                  switchInCurve: const Interval(0.5, 1),
+                  switchOutCurve: const Interval(0.5, 1),
+                  // The default centres its children; this page reads from
+                  // the left.
+                  layoutBuilder: (current, previous) => Stack(
+                    alignment: AlignmentDirectional.topStart,
+                    children: [...previous, ?current],
                   ),
-                  NotFound() => const _Message(
-                    Icons.search_off,
-                    'Postcode not found.',
+                  child: KeyedSubtree(
+                    key: ValueKey(state.runtimeType),
+                    child: switch (state) {
+                      Idle() => const SizedBox.shrink(),
+                      Loading() => Row(
+                        children: [
+                          const SizedBox.square(
+                            dimension: 24,
+                            child: CircularProgressIndicator(strokeWidth: 3),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              'Busy areas can take up to 15 seconds.',
+                              style: muted,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Results() => _Results(state),
+                      NotCovered() => const _Message(
+                        Icons.info_outline,
+                        "Not covered: this data isn't published for Scotland, "
+                        'the Isle of Man or the Channel Islands.',
+                      ),
+                      NotFound() => const _Message(
+                        Icons.search_off,
+                        'Postcode not found.',
+                      ),
+                      Failed() => _Message(
+                        Icons.error_outline,
+                        state.message,
+                        action: FilledButton(
+                          onPressed: () => _search(state.postcode.value),
+                          child: const Text('Try again'),
+                        ),
+                      ),
+                    },
                   ),
-                  Failed() => _Message(
-                    Icons.error_outline,
-                    state.message,
-                    action: FilledButton(
-                      onPressed: () => _search(state.postcode.value),
-                      child: const Text('Try again'),
-                    ),
-                  ),
-                },
+                ),
               ),
             const Divider(height: 1),
             _Band(
@@ -334,6 +365,7 @@ class _Results extends StatelessWidget {
           Text(results.highlights, style: text.bodyLarge),
           const SizedBox(height: 32),
           Text('Crime by category', style: text.titleLarge),
+          const SizedBox(height: 16),
           Text(
             '${results.thisMonth}, and change on ${results.lastMonth}',
             style: muted,
