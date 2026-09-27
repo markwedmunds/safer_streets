@@ -57,7 +57,7 @@ class CrimeCheckViewModel extends _$CrimeCheckViewModel {
       // Before errors: a retry, or Try again, is loading with the last error
       // still attached.
       AsyncValue(isLoading: true) || AsyncLoading() => const Loading(),
-      AsyncData(value: AreaFound(:final crime)) => Results(crime),
+      AsyncData(value: AreaFound(:final crime)) => Results(crime, postcode),
       AsyncData(value: AreaNotCovered()) => const NotCovered(),
       AsyncData(value: AreaNotFound()) => const NotFound(),
       AsyncError(error: final AppFailure failure) => Failed(failure, postcode),

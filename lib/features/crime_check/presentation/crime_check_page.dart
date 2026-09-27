@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../domain/area_report.dart';
 import 'crime_check_state.dart';
 import 'crime_check_view_model.dart';
 
@@ -240,39 +241,88 @@ class _Results extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final crime = results.crime;
+    final text = theme.textTheme;
+    final muted = text.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
     final categories = results.categories;
+    final (thisBar, lastBar) = results.bars;
+    final comparison = results.comparison;
+
+    final number = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(formatCount(results.total), style: text.displayLarge),
+        Text('crimes reported in ${results.thisMonth}', style: muted),
+      ],
+    );
+    final detail = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: results.summary),
+              TextSpan(
+                text: comparison.change,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: _trendColor(theme.colorScheme, results.crime.trend),
+                ),
+              ),
+              TextSpan(text: comparison.rest),
+            ],
+          ),
+          style: text.bodyLarge,
+        ),
+        const SizedBox(height: 16),
+        _MonthBar(
+          results.lastMonth,
+          results.lastTotal,
+          lastBar,
+          theme.colorScheme.outline,
+        ),
+        const SizedBox(height: 8),
+        _MonthBar(
+          results.thisMonth,
+          results.total,
+          thisBar,
+          theme.colorScheme.primary,
+        ),
+      ],
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          crime.locationName,
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: theme.colorScheme.primary,
-          ),
-        ),
         Row(
           children: [
-            Icon(results.trendIcon, size: 32, color: theme.colorScheme.primary),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                results.heading,
-                style: theme.textTheme.headlineSmall,
-              ),
+            Icon(
+              Icons.place_outlined,
+              size: 16,
+              color: theme.colorScheme.onSurfaceVariant,
             ),
+            const SizedBox(width: 4),
+            Expanded(child: Text(results.location, style: muted)),
           ],
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            _Total(results.thisMonth, crime.thisMonth.counts.total),
-            const SizedBox(width: 12),
-            _Total(results.lastMonth, crime.lastMonth.counts.total),
-          ],
-        ),
+        const SizedBox(height: 8),
+        Text(results.heading, style: text.headlineMedium),
         const SizedBox(height: 24),
+        if (MediaQuery.sizeOf(context).width < 600) ...[
+          number,
+          const SizedBox(height: 24),
+          detail,
+        ] else
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              number,
+              const SizedBox(width: 40),
+              Expanded(child: detail),
+            ],
+          ),
+        const SizedBox(height: 40),
         if (categories.isEmpty)
           const Text('No street crime was recorded near here in either month.')
         else ...[
@@ -280,7 +330,7 @@ class _Results extends StatelessWidget {
             'By category',
             results.thisMonth,
             'Change',
-            style: theme.textTheme.labelLarge,
+            style: text.labelLarge,
           ),
           const Divider(),
           for (final row in categories)
@@ -291,28 +341,58 @@ class _Results extends StatelessWidget {
   }
 }
 
-class _Total extends StatelessWidget {
-  const _Total(this.month, this.count);
+Color _trendColor(ColorScheme scheme, Trend trend) => switch (trend) {
+  Trend.down => scheme.primary,
+  Trend.up => scheme.tertiary,
+  Trend.flat => scheme.onSurfaceVariant,
+};
+
+class _MonthBar extends StatelessWidget {
+  const _MonthBar(this.month, this.count, this.fraction, this.color);
 
   final String month;
   final int count;
+  final double fraction;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final style = Theme.of(context).textTheme.bodySmall;
 
-    return Expanded(
-      child: Card.filled(
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('$count', style: theme.textTheme.displaySmall),
-              Text('crimes in $month', style: theme.textTheme.bodyMedium),
-            ],
+    return Row(
+      children: [
+        SizedBox(width: 72, child: Text(month, style: style)),
+        Expanded(child: _Bar(fraction, color)),
+        SizedBox(
+          width: 56,
+          child: Text(
+            formatCount(count),
+            style: style,
+            textAlign: TextAlign.end,
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Bar extends StatelessWidget {
+  const _Bar(this.fraction, this.color);
+
+  final double fraction;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        height: 10,
+        alignment: Alignment.centerLeft,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: FractionallySizedBox(
+          widthFactor: fraction,
+          child: ColoredBox(color: color, child: const SizedBox.expand()),
         ),
       ),
     );
