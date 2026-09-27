@@ -16,10 +16,80 @@ class App extends StatelessWidget {
     );
   }
 
-  ThemeData _theme(Brightness brightness) => ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.indigo,
-      brightness: brightness,
-    ),
-  );
+  ThemeData _theme(Brightness brightness) {
+    Color pick(int light, int dark) =>
+        Color(brightness == Brightness.light ? light : dark);
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1D4F86),
+          brightness: brightness,
+        ).copyWith(
+          primary: pick(0xFF1D4F86, 0xFFA9C9F0),
+          onPrimary: pick(0xFFFFFFFF, 0xFF0B1D33),
+          // More crime. Amber and blue stay distinct with red-green colour
+          // blindness, and amber reads as "note this" without red's alarm.
+          tertiary: pick(0xFF974500, 0xFFF3B072),
+          surface: pick(0xFFFFFFFF, 0xFF131518),
+          onSurface: pick(0xFF16181B, 0xFFE8EAED),
+          onSurfaceVariant: pick(0xFF4B5058, 0xFFB4B9C0),
+          surfaceContainerLow: pick(0xFFEEF3F8, 0xFF18202B),
+          surfaceContainerHighest: pick(0xFFE6E9ED, 0xFF262A30),
+          outline: pick(0xFFB9C1CB, 0xFF4A525D),
+          outlineVariant: pick(0xFFD9DCE0, 0xFF343840),
+        );
+    TextStyle heading(double size) => TextStyle(
+      fontSize: size,
+      fontWeight: FontWeight.w800,
+      letterSpacing: size * -0.025,
+      height: 1.1,
+    );
+    final radius = BorderRadius.circular(8);
+
+    return ThemeData(
+      colorScheme: scheme,
+      fontFamily: 'Inter',
+      textTheme: TextTheme(
+        displayLarge: heading(80),
+        displayMedium: heading(56),
+        displaySmall: heading(40),
+        headlineMedium: heading(30),
+        titleLarge: heading(20),
+        bodyLarge: const TextStyle(fontSize: 18, height: 1.5),
+        bodyMedium: const TextStyle(fontSize: 16, height: 1.5),
+        labelMedium: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: scheme.onSurface,
+          foregroundColor: scheme.surface,
+          minimumSize: const Size(0, 56),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          shape: RoundedRectangleBorder(borderRadius: radius),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          minimumSize: Size.zero,
+          padding: const EdgeInsets.all(4),
+          textStyle: const TextStyle(decoration: TextDecoration.underline),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(borderRadius: radius),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: radius,
+          borderSide: BorderSide(color: scheme.onSurface, width: 2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: radius,
+          borderSide: BorderSide(color: scheme.primary, width: 2),
+        ),
+      ),
+    );
+  }
 }
