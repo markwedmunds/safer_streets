@@ -29,6 +29,15 @@ final class Results extends CrimeCheckState {
     Trend.up => 'More crimes than in $lastMonth',
     Trend.flat => 'About the same as $lastMonth',
   };
+
+  List<({String category, String count, String change})> get categories => [
+    for (final row in crime.categories)
+      (
+        category: row.category,
+        count: '${row.count}',
+        change: row.change > 0 ? '+${row.change}' : '${row.change}',
+      ),
+  ];
 }
 
 final class NotCovered extends CrimeCheckState {

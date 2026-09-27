@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'features/crime_check/presentation/crime_check_page.dart';
+
 class App extends StatelessWidget {
   const App({super.key});
 
@@ -10,7 +12,7 @@ class App extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: _theme(Brightness.light),
       darkTheme: _theme(Brightness.dark),
-      home: const Scaffold(),
+      home: const CrimeCheckPage(),
     );
   }
 
