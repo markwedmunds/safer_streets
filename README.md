@@ -2,7 +2,7 @@
 
 Type a UK postcode and see whether street crime nearby went up or down last month, with the totals for both months and each category's change. One screen, one question, answered plainly.
 
-**Track 02, UK Crime & Safety Explorer**, using [data.police.uk](https://data.police.uk/docs/) for crime and [postcodes.io](https://postcodes.io) to turn a postcode into coordinates. Both are free and keyless. I picked this track because its data is messy in useful ways: monthly releases, slow queries for busy areas, whole countries missing and a strict CORS setup. That makes resilience a real part of the product, not an add-on.
+**Track 02, UK Crime & Safety Explorer**, using [data.police.uk](https://data.police.uk/docs/) for crime and [postcodes.io](https://postcodes.io) to turn a postcode into coordinates. Both are free and keyless. I picked this track because its data is messy in useful ways: monthly releases, slow queries for busy areas, whole countries missing and a strict CORS setup.
 
 ## Run and test
 
@@ -16,17 +16,29 @@ fvm flutter test
 
 Generated `.g.dart` files are committed, so `build_runner` is only needed after changing a provider: `fvm dart run build_runner build`.
 
-The tests cover what would do damage if it broke, replaying real API responses recorded in `test/fixtures/`:
-
-- Postcode parsing: any case and spacing is normalised; partial postcodes and nonsense are rejected.
-- Crime counting: a real response is counted by category; an unreadable payload is `BadData`, never "no crime". The 5% "about the same" rule is covered too.
-- Failure mapping: 404, 429, 503, 5xx and a connection error each become the right failure.
-- Repository: loads two months for `WA1 1UH` sending **no request headers**; Scotland is not covered, with no police request.
-- Widget: typing a postcode and pressing Enter shows the heading.
-
 CI runs format, analyze, tests and a `--wasm` release build, then deploys `main` to GitHub Pages.
 
 ## How it works
+
+```mermaid
+flowchart TD
+  subgraph presentation
+    Page[CrimeCheckPage] -- "search(input)" --> VM[CrimeCheckViewModel]
+    VM -- CrimeCheckState --> Page
+    VM -- watches --> AR["areaReportProvider(postcode)<br/>retry, 15 min cache, cancel"]
+  end
+  subgraph domain
+    Repo[["CrimeRepository (interface)"]]
+  end
+  subgraph infrastructure
+    Api[ApiCrimeRepository] --> Postcodes[PostcodesApi]
+    Api --> Police[PoliceApi]
+  end
+  AR -- "reportFor(postcode)" --> Repo
+  Repo -. implemented by .-> Api
+  Postcodes --> P[(postcodes.io)]
+  Police --> D[(data.police.uk)]
+```
 
 - `domain/` is plain Dart: `Postcode`, the `AreaReport` answers (`AreaFound`, `AreaNotCovered`, `AreaNotFound`), the sealed `AppFailure`, and the `CrimeRepository` interface.
 - `infrastructure/` talks to the two APIs with Dio. `ApiCrimeRepository` is the only `try/catch`, mapping every error to an `AppFailure` in one function.
@@ -56,6 +68,28 @@ CI runs format, analyze, tests and a `--wasm` release build, then deploys `main`
 - **This cache.** The data changes monthly, so a successful report is kept in memory for 15 minutes. Failures are never cached, and nothing is persisted.
 - **Two parallel requests for the two months.** This halves the wait on slow areas and stays well inside the rate limit.
 
+## Testing and QA
+
+The tests cover what would do damage if it broke, replaying real API responses recorded in `test/fixtures/`:
+
+- Postcode parsing: any case and spacing is normalised; partial postcodes and nonsense are rejected.
+- Crime counting: a real response is counted by category; an unreadable payload is `BadData`, never "no crime". The 5% "about the same" rule is covered too.
+- Failure mapping: 404, 429, 503, 5xx and a connection error each become the right failure.
+- Repository: loads two months for `WA1 1UH` sending **no request headers**; Scotland is not covered, with no police request.
+- Widget: typing a postcode and pressing Enter shows the heading.
+
+To check the tests guard what they claim, I broke the code on purpose (added an `Accept` header, removed the country check, removed the 503 guard) and confirmed the matching test failed each time.
+
+Then I ran the release `--wasm` build, served with no special headers as on GitHub Pages, in Chrome against the live APIs. I went through every row of the plan below, watching the Network panel for request headers and request counts, in light and dark, on desktop and at 390px.
+
+With more time I'd check next:
+- Safari, Firefox and real phones with soft keyboards.
+- Throttled networks against the 15s timeout.
+- A real 503 and a real 429. No postcode I tried crossed 10,000 crimes, so those paths are covered by tests only.
+- The day a new month appears before its data is complete.
+- A screen-reader pass.
+- These browser checks as a Playwright smoke test in CI.
+
 ## Manual test plan
 
 | Input or action | Expected |
@@ -64,6 +98,7 @@ CI runs format, analyze, tests and a `--wasm` release build, then deploys `main`
 | `EH1 1YZ` | Not covered message; no request to data.police.uk (DevTools Network) |
 | `IM1 1AE` | Not covered message (no coordinates for the Isle of Man) |
 | `ZZ9 9ZZ` | "Postcode not found." |
+| `W1D 3QU` (Soho) | About 5,000 crimes a month: a spinner for around 10s, then results |
 | `WA1 1` | "Enter a full UK postcode" under the field; no request |
 | DevTools offline, search | Spinner, 3 attempts, then an error with Try again; back online, Try again shows results |
 | Search A, then B, then A | The third search is instant (cached) |
@@ -73,7 +108,7 @@ CI runs format, analyze, tests and a `--wasm` release build, then deploys `main`
 
 - Crime is counted within a mile of the postcode's centre, as the police API defines it. Locations are anonymised to nearby points.
 - One month against the last is noisy. The 5% threshold is a judgement call. Next: a 12-month trend.
-- Areas with over 10,000 crimes a month can't be shown. Next: query a smaller custom area.
+- Areas with over 10,000 crimes a month can't be shown, and the busiest areas that can take about 12s, close to the 15s timeout. Next: query a smaller custom area.
 - The field keeps the raw input (`wa11uh`) and loses focus after Enter.
 - On GitHub Pages the wasm renderer runs single-threaded, because Pages can't send the cross-origin isolation headers. It logs a console warning.
 - Not done: accessibility review, localisation, persistence, error reporting, and browser E2E tests in CI.
