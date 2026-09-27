@@ -4,6 +4,14 @@ import '../domain/area_report.dart';
 import '../domain/failure.dart';
 import '../domain/postcode.dart';
 
+typedef CategoryRow = ({
+  String category,
+  String count,
+  double bar,
+  String change,
+  Trend trend,
+});
+
 sealed class CrimeCheckState {
   const CrimeCheckState();
 }
@@ -63,14 +71,46 @@ final class Results extends CrimeCheckState {
     return most == 0 ? (0, 0) : (total / most, lastTotal / most);
   }
 
-  List<({String category, String count, String change})> get categories => [
-    for (final row in crime.categories)
-      (
-        category: row.category,
-        count: formatCount(row.count),
-        change: row.change > 0 ? '+${row.change}' : '${row.change}',
-      ),
-  ];
+  /// "Violence and sexual offences was the most common. Anti-social
+  /// behaviour fell the most, down 13."
+  String get highlights {
+    final rows = crime.categories;
+    if (rows.isEmpty) return '';
+    final common = rows.first.category;
+    final mover = rows.reduce(
+      (a, b) => b.change.abs() > a.change.abs() ? b : a,
+    );
+    final moved = mover.change < 0
+        ? 'fell the most, down ${-mover.change}'
+        : 'rose the most, up ${mover.change}';
+    if (total > 0 && mover.change != 0 && mover.category == common) {
+      return '$common was the most common, and $moved.';
+    }
+    return [
+      if (total > 0) '$common was the most common.',
+      if (mover.change != 0) '${mover.category} $moved.',
+    ].join(' ');
+  }
+
+  /// Largest first. [bar] is relative to the largest category.
+  List<CategoryRow> get categories {
+    final rows = crime.categories;
+    final most = rows.isEmpty ? 0 : rows.first.count;
+    return [
+      for (final row in rows)
+        (
+          category: row.category,
+          count: formatCount(row.count),
+          bar: most == 0 ? 0 : row.count / most,
+          change: switch (row.trend) {
+            Trend.down => '↓ ${formatCount(-row.change)} fewer',
+            Trend.up => '↑ ${formatCount(row.change)} more',
+            Trend.flat => '≈ About the same',
+          },
+          trend: row.trend,
+        ),
+    ];
+  }
 }
 
 final class NotCovered extends CrimeCheckState {

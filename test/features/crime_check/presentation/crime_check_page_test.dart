@@ -50,6 +50,6 @@ void main() {
       find.text('WA1 1UH, Warrington · July 2026 compared with June'),
       findsOneWidget,
     );
-    expect(find.text('-10'), findsOneWidget);
+    expect(find.text('↓ 10 fewer'), findsOneWidget);
   });
 }

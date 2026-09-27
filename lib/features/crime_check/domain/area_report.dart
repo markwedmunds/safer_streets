@@ -36,16 +36,10 @@ final class AreaCrime {
   final MonthCounts thisMonth;
   final MonthCounts lastMonth;
 
-  Trend get trend {
-    final change = thisMonth.counts.total - lastMonth.counts.total;
-    if (change == 0 || change.abs() < lastMonth.counts.total * 0.05) {
-      return Trend.flat;
-    }
-    return change > 0 ? Trend.up : Trend.down;
-  }
+  Trend get trend => trendOf(thisMonth.counts.total, lastMonth.counts.total);
 
   /// Every category seen in either month, largest this month first.
-  List<({String category, int count, int change})> get categories {
+  List<({String category, int count, int change, Trend trend})> get categories {
     final now = thisMonth.counts.byCategory;
     final before = lastMonth.counts.byCategory;
     return [
@@ -54,6 +48,7 @@ final class AreaCrime {
           category: category,
           count: now[category] ?? 0,
           change: (now[category] ?? 0) - (before[category] ?? 0),
+          trend: trendOf(now[category] ?? 0, before[category] ?? 0),
         ),
     ]..sort(
       (a, b) => a.count == b.count
@@ -61,6 +56,13 @@ final class AreaCrime {
           : b.count.compareTo(a.count),
     );
   }
+}
+
+/// A change under 5% of last month is [Trend.flat].
+Trend trendOf(int now, int before) {
+  final change = now - before;
+  if (change == 0 || change.abs() < before * 0.05) return Trend.flat;
+  return change > 0 ? Trend.up : Trend.down;
 }
 
 /// Crimes in one month, keyed by category label.

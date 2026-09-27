@@ -196,7 +196,10 @@ class _Band extends StatelessWidget {
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: 720 + padding.horizontal),
-          child: Padding(padding: padding, child: child),
+          child: SizedBox(
+            width: double.infinity,
+            child: Padding(padding: padding, child: child),
+          ),
         ),
       ),
     );
@@ -326,15 +329,28 @@ class _Results extends StatelessWidget {
         if (categories.isEmpty)
           const Text('No street crime was recorded near here in either month.')
         else ...[
-          _Row(
-            'By category',
-            results.thisMonth,
-            'Change',
-            style: text.labelLarge,
+          const Divider(height: 1),
+          const SizedBox(height: 24),
+          Text(results.highlights, style: text.bodyLarge),
+          const SizedBox(height: 32),
+          Text('Crime by category', style: text.titleLarge),
+          Text(
+            '${results.thisMonth}, and change on ${results.lastMonth}',
+            style: muted,
           ),
-          const Divider(),
-          for (final row in categories)
-            _Row(row.category, row.count, row.change),
+          const SizedBox(height: 8),
+          Divider(height: 2, thickness: 2, color: theme.colorScheme.onSurface),
+          for (final row in categories) ...[
+            _CategoryRow(row),
+            const Divider(height: 1),
+          ],
+          const SizedBox(height: 16),
+          Text(
+            '≈ About the same means within 5%. Each month is published about '
+            'two months later, and locations are moved to a nearby point to '
+            'protect privacy.',
+            style: muted,
+          ),
         ],
       ],
     );
@@ -399,27 +415,51 @@ class _Bar extends StatelessWidget {
   }
 }
 
-class _Row extends StatelessWidget {
-  const _Row(this.category, this.count, this.change, {this.style});
+class _CategoryRow extends StatelessWidget {
+  const _CategoryRow(this.row);
 
-  final String category;
-  final String count;
-  final String change;
-  final TextStyle? style;
+  final CategoryRow row;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: DefaultTextStyle.merge(
-        style: style,
-        child: Row(
-          children: [
-            Expanded(child: Text(category)),
-            SizedBox(width: 72, child: Text(count, textAlign: TextAlign.end)),
-            SizedBox(width: 72, child: Text(change, textAlign: TextAlign.end)),
-          ],
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text(row.category)),
+              Text(
+                row.count,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: _Bar(
+                  row.bar,
+                  theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                ),
+              ),
+              SizedBox(
+                width: 140,
+                child: Text(
+                  row.change,
+                  textAlign: TextAlign.end,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: _trendColor(theme.colorScheme, row.trend),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
