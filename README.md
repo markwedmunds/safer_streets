@@ -94,7 +94,9 @@ With more time I'd check next:
 
 | Input or action | Expected |
 | --- | --- |
-| `wa11uh`, Enter | Warrington, a heading such as "Fewer crimes than in June", both totals, categories largest first |
+| First load | Example chips: Warrington, Cardiff, Belfast, Edinburgh; tapping one fills the field and searches |
+| `wa11uh`, Enter | Field shows `WA1 1UH`; Warrington, a trend icon and a heading such as "Fewer crimes than in June", both totals, categories largest first |
+| `bt15gs`, Enter, straight after | No click needed on desktop: focus stays in the field; Belfast results |
 | `EH1 1YZ` | Not covered message; no request to data.police.uk (DevTools Network) |
 | `IM1 1AE` | Not covered message (no coordinates for the Isle of Man) |
 | `ZZ9 9ZZ` | "Postcode not found." |
@@ -109,7 +111,6 @@ With more time I'd check next:
 - Crime is counted within a mile of the postcode's centre, as the police API defines it. Locations are anonymised to nearby points.
 - One month against the last is noisy. The 5% threshold is a judgement call. Next: a 12-month trend.
 - Areas with over 10,000 crimes a month can't be shown, and the busiest areas that can take about 12s, close to the 15s timeout. Next: query a smaller custom area.
-- The field keeps the raw input (`wa11uh`) and loses focus after Enter.
 - On GitHub Pages the wasm renderer runs single-threaded, because Pages can't send the cross-origin isolation headers. It logs a console warning.
 - Not done: accessibility review, localisation, persistence, error reporting, and browser E2E tests in CI.
 
