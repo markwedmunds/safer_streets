@@ -162,7 +162,18 @@ class _Results extends StatelessWidget {
             color: theme.colorScheme.primary,
           ),
         ),
-        Text(results.heading, style: theme.textTheme.headlineSmall),
+        Row(
+          children: [
+            Icon(results.trendIcon, size: 32, color: theme.colorScheme.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                results.heading,
+                style: theme.textTheme.headlineSmall,
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
         Row(
           children: [

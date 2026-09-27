@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../domain/area_report.dart';
 import '../domain/failure.dart';
 import '../domain/postcode.dart';
@@ -28,6 +30,12 @@ final class Results extends CrimeCheckState {
     Trend.down => 'Fewer crimes than in $lastMonth',
     Trend.up => 'More crimes than in $lastMonth',
     Trend.flat => 'About the same as $lastMonth',
+  };
+
+  IconData get trendIcon => switch (crime.trend) {
+    Trend.down => Icons.trending_down,
+    Trend.up => Icons.trending_up,
+    Trend.flat => Icons.trending_flat,
   };
 
   List<({String category, String count, String change})> get categories => [
