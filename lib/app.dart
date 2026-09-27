@@ -44,10 +44,12 @@ class App extends StatelessWidget {
       height: 1.1,
     );
     final radius = BorderRadius.circular(8);
+    // Button text styles replace the theme's, so they name the font too.
+    const font = 'Inter';
 
     return ThemeData(
       colorScheme: scheme,
-      fontFamily: 'Inter',
+      fontFamily: font,
       textTheme: TextTheme(
         displayLarge: heading(80),
         displayMedium: heading(56),
@@ -56,6 +58,7 @@ class App extends StatelessWidget {
         titleLarge: heading(20),
         bodyLarge: const TextStyle(fontSize: 18, height: 1.5),
         bodyMedium: const TextStyle(fontSize: 16, height: 1.5),
+        bodySmall: const TextStyle(fontSize: 14, height: 1.45),
         labelMedium: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
@@ -69,17 +72,26 @@ class App extends StatelessWidget {
           minimumSize: const Size(0, 56),
           padding: const EdgeInsets.symmetric(horizontal: 24),
           shape: RoundedRectangleBorder(borderRadius: radius),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          textStyle: const TextStyle(
+            fontFamily: font,
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           minimumSize: Size.zero,
           padding: const EdgeInsets.all(4),
-          textStyle: const TextStyle(decoration: TextDecoration.underline),
+          textStyle: const TextStyle(
+            fontFamily: font,
+            decoration: TextDecoration.underline,
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: scheme.surface,
         border: OutlineInputBorder(borderRadius: radius),
         enabledBorder: OutlineInputBorder(
           borderRadius: radius,

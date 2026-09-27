@@ -36,48 +36,109 @@ class _CrimeCheckPageState extends ConsumerState<CrimeCheckPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(crimeCheckViewModelProvider);
     final theme = Theme.of(context);
+    final text = theme.textTheme;
+    final muted = text.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
 
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
-            child: ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                Text('Safer Streets', style: theme.textTheme.headlineMedium),
-                const SizedBox(height: 4),
-                Text(
-                  'Did street crime near you go up or down last month?',
-                  style: theme.textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 24),
-                TextField(
-                  controller: _field,
-                  autofocus: true,
-                  textCapitalization: TextCapitalization.characters,
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                    labelText: 'Postcode',
-                    hintText: 'e.g. WA1 1UH',
-                    prefixIcon: const Icon(Icons.search),
-                    border: const OutlineInputBorder(),
-                    errorText: switch (state) {
-                      Idle(invalidInput: true) => 'Enter a full UK postcode',
-                      _ => null,
-                    },
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _Band(
+              color: theme.colorScheme.surfaceContainerLow,
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 48),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.shield, color: theme.colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Safer Streets',
+                        style: text.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ),
-                  onSubmitted: _search,
-                  // Stay in the field for the next search on desktop; on
-                  // touch, closing the keyboard reveals the results.
-                  onEditingComplete: switch (defaultTargetPlatform) {
-                    TargetPlatform.android || TargetPlatform.iOS => null,
-                    _ => () {},
-                  },
-                ),
-                const SizedBox(height: 32),
-                switch (state) {
-                  Idle() => _Examples(onSearch: _search),
+                  const SizedBox(height: 56),
+                  Text(
+                    'STREET-LEVEL CRIME · ENGLAND, WALES AND NORTHERN IRELAND',
+                    style: text.labelMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Is your area getting safer?',
+                    style: MediaQuery.sizeOf(context).width < 600
+                        ? text.displaySmall
+                        : text.displayMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'See how much crime was reported within about a mile of a '
+                    'postcode, and whether it went up or down on the month '
+                    'before.',
+                    style: text.bodyLarge,
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Enter a postcode',
+                    style: text.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text('For example, WA1 1UH', style: muted),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      SizedBox(
+                        width: 280,
+                        child: TextField(
+                          controller: _field,
+                          autofocus: true,
+                          textCapitalization: TextCapitalization.characters,
+                          textInputAction: TextInputAction.search,
+                          decoration: InputDecoration(
+                            errorText: switch (state) {
+                              Idle(invalidInput: true) =>
+                                'Enter a full UK postcode',
+                              _ => null,
+                            },
+                          ),
+                          onSubmitted: _search,
+                          // Stay in the field for the next search on desktop;
+                          // on touch, closing the keyboard reveals the results.
+                          onEditingComplete: switch (defaultTargetPlatform) {
+                            TargetPlatform.android ||
+                            TargetPlatform.iOS => null,
+                            _ => () {},
+                          },
+                        ),
+                      ),
+                      FilledButton.icon(
+                        onPressed: () => _search(_field.text),
+                        icon: const Icon(Icons.arrow_forward),
+                        iconAlignment: IconAlignment.end,
+                        label: const Text('Check'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _Examples(onSearch: _search),
+                ],
+              ),
+            ),
+            if (state is! Idle)
+              _Band(
+                child: switch (state) {
+                  Idle() => const SizedBox.shrink(),
                   Loading() => const Center(child: CircularProgressIndicator()),
                   Results() => _Results(state),
                   NotCovered() => const _Message(
@@ -98,17 +159,43 @@ class _CrimeCheckPageState extends ConsumerState<CrimeCheckPage> {
                     ),
                   ),
                 },
-                const SizedBox(height: 32),
-                Text(
-                  'Street crime within a mile of the postcode, '
-                  'from data.police.uk and postcodes.io.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+              ),
+            const Divider(height: 1),
+            _Band(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'Crime data from data.police.uk and postcode data from '
+                'postcodes.io, under the Open Government Licence v3.0.',
+                style: muted,
+              ),
             ),
-          ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Full width, with its content in a centred column.
+class _Band extends StatelessWidget {
+  const _Band({
+    required this.child,
+    this.color,
+    this.padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+  });
+
+  final Widget child;
+  final Color? color;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: color ?? Colors.transparent,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 720 + padding.horizontal),
+          child: Padding(padding: padding, child: child),
         ),
       ),
     );
@@ -131,12 +218,15 @@ class _Examples extends StatelessWidget {
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 8,
-      runSpacing: 8,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        const Text('Try'),
+        Text(
+          'Or try',
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
         for (final MapEntry(key: place, value: postcode) in _postcodes.entries)
-          ActionChip(label: Text(place), onPressed: () => onSearch(postcode)),
+          TextButton(onPressed: () => onSearch(postcode), child: Text(place)),
       ],
     );
   }
@@ -265,10 +355,11 @@ class _Message extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, size: 40, color: Theme.of(context).colorScheme.primary),
         const SizedBox(height: 12),
-        Text(text, textAlign: TextAlign.center),
+        Text(text, style: Theme.of(context).textTheme.bodyLarge),
         if (action case final action?) ...[const SizedBox(height: 16), action],
       ],
     );

@@ -46,7 +46,6 @@ void main() {
 
     expect(find.text('WA1 1UH'), findsOneWidget);
     expect(find.text('Fewer crimes than in June'), findsOneWidget);
-    expect(find.text('Warrington'), findsOneWidget);
     expect(find.text('-10'), findsOneWidget);
   });
 }
