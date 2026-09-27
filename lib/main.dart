@@ -3,4 +3,5 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
 
-void main() => runApp(const ProviderScope(child: App()));
+// Retry is off by default; the one provider that needs it opts in.
+void main() => runApp(ProviderScope(retry: (_, _) => null, child: const App()));
