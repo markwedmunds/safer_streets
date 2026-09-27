@@ -41,19 +41,27 @@ final class Results extends CrimeCheckState {
       '${postcode.value}, ${crime.locationName} · '
       '$thisMonth ${crime.thisMonth.month.year} compared with $lastMonth';
 
-  String get heading => switch (crime.trend) {
-    Trend.down => 'Fewer crimes than in $lastMonth',
-    Trend.up => 'More crimes than in $lastMonth',
-    Trend.flat => 'About the same as $lastMonth',
-  };
+  /// Nothing to compare: "about the same as June, when there were 0" reads
+  /// as a glitch.
+  bool get noCrime => total == 0 && lastTotal == 0;
 
-  String get summary =>
-      '${formatCount(total)} crimes were reported within about a mile in '
-      '$thisMonth. '
-      'That is ';
+  String get heading => noCrime
+      ? 'No crimes reported in $thisMonth or $lastMonth'
+      : switch (crime.trend) {
+          Trend.down => 'Fewer crimes than in $lastMonth',
+          Trend.up => 'More crimes than in $lastMonth',
+          Trend.flat => 'About the same as $lastMonth',
+        };
 
-  /// Completes [summary]: "↓ 9% fewer" (emphasised), then the rest.
-  ({String change, String rest}) get comparison {
+  String get summary => noCrime
+      ? 'Nothing was reported within about a mile in either month.'
+      : '${formatCount(total)} crimes were reported within about a mile in '
+            '$thisMonth. That is ';
+
+  /// Completes [summary]: "↓ 9% fewer" (emphasised), then the rest. Null
+  /// when there's [noCrime].
+  ({String change, String rest})? get comparison {
+    if (noCrime) return null;
     final percent = lastTotal == 0
         ? ''
         : '${((total - lastTotal).abs() * 100 / lastTotal).round()}% ';

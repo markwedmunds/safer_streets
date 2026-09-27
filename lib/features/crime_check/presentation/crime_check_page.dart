@@ -296,14 +296,16 @@ class _Results extends StatelessWidget {
           TextSpan(
             children: [
               TextSpan(text: results.summary),
-              TextSpan(
-                text: comparison.change,
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: _trendColor(theme.colorScheme, results.crime.trend),
+              if (comparison != null) ...[
+                TextSpan(
+                  text: comparison.change,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: _trendColor(theme.colorScheme, results.crime.trend),
+                  ),
                 ),
-              ),
-              TextSpan(text: comparison.rest),
+                TextSpan(text: comparison.rest),
+              ],
             ],
           ),
           style: text.bodyLarge,
@@ -355,10 +357,8 @@ class _Results extends StatelessWidget {
               Expanded(child: detail),
             ],
           ),
-        const SizedBox(height: 40),
-        if (categories.isEmpty)
-          const Text('No street crime was recorded near here in either month.')
-        else ...[
+        if (categories.isNotEmpty) ...[
+          const SizedBox(height: 40),
           const Divider(height: 1),
           const SizedBox(height: 24),
           Text(results.highlights, style: text.bodyLarge),
