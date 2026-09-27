@@ -77,7 +77,7 @@ class _CrimeCheckPageState extends ConsumerState<CrimeCheckPage> {
                 ),
                 const SizedBox(height: 32),
                 switch (state) {
-                  Idle() => const SizedBox.shrink(),
+                  Idle() => _Examples(onSearch: _search),
                   Loading() => const Center(child: CircularProgressIndicator()),
                   Results() => _Results(state),
                   NotCovered() => const _Message(
@@ -111,6 +111,33 @@ class _CrimeCheckPageState extends ConsumerState<CrimeCheckPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _Examples extends StatelessWidget {
+  const _Examples({required this.onSearch});
+
+  final ValueChanged<String> onSearch;
+
+  static const _postcodes = {
+    'Warrington': 'WA1 1UH',
+    'Cardiff': 'CF10 1EP',
+    'Belfast': 'BT1 5GS',
+    'Edinburgh': 'EH1 1YZ',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        const Text('Try'),
+        for (final MapEntry(key: place, value: postcode) in _postcodes.entries)
+          ActionChip(label: Text(place), onPressed: () => onSearch(postcode)),
+      ],
     );
   }
 }
