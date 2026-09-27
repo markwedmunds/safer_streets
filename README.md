@@ -18,7 +18,7 @@ Generated `.g.dart` files are committed, so `build_runner` is only needed after 
 
 CI runs format, analyze, tests and a `--wasm` release build, then deploys `main` to GitHub Pages.
 
-[`docs/`](docs) has two short references: what testing the real APIs turned up, and how to force each state in Chrome DevTools.
+[`docs/NOTES.md`](docs/NOTES.md) has two short references: what testing the real APIs turned up, and how to force each state in Chrome DevTools.
 
 ## How it works
 
