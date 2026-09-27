@@ -116,8 +116,22 @@ With more time I'd check next:
 - One month against the last is noisy. The 5% threshold is a judgement call. Next: a 12-month trend.
 - Areas with over 10,000 crimes a month can't be shown, and the busiest areas that can be shown take about 12s, close to the 15s timeout. Next: query a smaller custom area.
 - On GitHub Pages the wasm renderer runs single-threaded, because Pages can't send the cross-origin isolation headers. It logs a console warning.
-- Loading is a spinner and an honest hint. Next: a skeleton in the shape of the results, and loading steps driven by real progress from the repository rather than a timer.
-- Not done: accessibility review, localisation, persistence, error reporting, and browser E2E tests in CI.
+- Besides the two APIs, the app loads Flutter's renderer and a default Roboto font from Google's CDNs.
+
+### In a larger project
+
+Left out to keep this small, not overlooked:
+
+- **Accessibility:** semantics switched on at start-up (`SemanticsBinding.instance.ensureSemantics()`, because Flutter web only builds its accessibility tree when a screen reader asks for it), heading levels, one spoken sentence per category row and per bar, each outcome announced, a visible keyboard focus ring, contrast measured against WCAG 2.2 AA, and 200% text at 320px wide.
+- **Motion:** a skeleton in the shape of the results, the total counting up and the bars growing from last month's figures, all through one motion setting that honours reduced motion. Loading steps driven by real progress from the repository, not a timer.
+- **Design system:** colour, type and spacing tokens as `ThemeExtension`s, and shared components (message, link, page column), moved into their own package with Melos once a second app needs them.
+- **End-to-end and visual tests:** Patrol on web in CI, against a fake backend at the Dio adapter so the whole stack runs without the live APIs, plus golden tests for light, dark and phone widths.
+- **Localisation:** ARB files with `flutter_localizations`, and `intl` for numbers and month names in place of the two small helpers here.
+- **Error reporting:** Sentry or Crashlytics behind an `ErrorReporter` interface that the host app provides.
+- **Fitting into a host app:** the module as one widget that takes the host's theme and `ProviderScope` overrides, with deep links (`?postcode=`) handled by the host's router (go_router) calling `search`.
+- **Data and performance:** a persistent cache per month, a 12-month trend, refresh that keeps the old results if it fails, parsing large responses off the main thread (a Web Worker), and self-hosting the renderer and fonts.
+- **QA tooling:** a debug-only fault-injection mode (slow, offline, 429, 503, bad data), so every state can be shown without DevTools.
+- **Product:** a map, address autocomplete, comparing two areas, the local neighbourhood policing team (police.uk's neighbourhood API), and where to report a crime or get support.
 
 ## How AI was used
 
