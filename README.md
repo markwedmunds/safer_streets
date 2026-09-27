@@ -95,7 +95,7 @@ With more time I'd check next:
 
 | Input or action | Expected |
 | --- | --- |
-| "Or try" links | Warrington, Cardiff, Belfast, Edinburgh: each fills the field and searches |
+| "Or try" links | WA1 1UH, CF10 1EP, BT1 5GS, EH1 1YZ: each fills the field and searches |
 | `wa11uh`, Enter (or Check) | Field shows `WA1 1UH`; "Fewer crimes than in June", 456 with "↓ 9% fewer" and two month bars, a summary line, then 14 categories largest first with bars and "↓ 10 fewer" style changes |
 | `bt15gs`, Enter, straight after | No click needed on desktop: focus stays in the field; Belfast results |
 | `EH1 1YZ` | Not covered message; no request to data.police.uk (DevTools Network) |

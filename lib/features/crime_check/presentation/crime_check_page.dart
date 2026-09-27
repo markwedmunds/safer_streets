@@ -242,12 +242,8 @@ class _Examples extends StatelessWidget {
 
   final ValueChanged<String> onSearch;
 
-  static const _postcodes = {
-    'Warrington': 'WA1 1UH',
-    'Cardiff': 'CF10 1EP',
-    'Belfast': 'BT1 5GS',
-    'Edinburgh': 'EH1 1YZ',
-  };
+  /// England, Wales, Northern Ireland, and Scotland to show not covered.
+  static const _postcodes = ['WA1 1UH', 'CF10 1EP', 'BT1 5GS', 'EH1 1YZ'];
 
   @override
   Widget build(BuildContext context) {
@@ -260,8 +256,11 @@ class _Examples extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
-        for (final MapEntry(key: place, value: postcode) in _postcodes.entries)
-          TextButton(onPressed: () => onSearch(postcode), child: Text(place)),
+        for (final postcode in _postcodes)
+          TextButton(
+            onPressed: () => onSearch(postcode),
+            child: Text(postcode),
+          ),
       ],
     );
   }
