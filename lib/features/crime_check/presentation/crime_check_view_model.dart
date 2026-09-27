@@ -69,7 +69,8 @@ class CrimeCheckViewModel extends _$CrimeCheckViewModel {
     };
   }
 
-  void search(String input) {
+  /// Returns the postcode as understood, or null if [input] isn't one.
+  Postcode? search(String input) {
     final postcode = Postcode.tryParse(input);
     // Searching the failed postcode again is Try again: ask afresh.
     if (postcode != null && postcode == _postcode && state is Failed) {
@@ -78,5 +79,6 @@ class CrimeCheckViewModel extends _$CrimeCheckViewModel {
     _postcode = postcode;
     _invalidInput = postcode == null;
     ref.invalidateSelf();
+    return postcode;
   }
 }

@@ -1,16 +1,40 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'crime_check_state.dart';
 import 'crime_check_view_model.dart';
 
-class CrimeCheckPage extends ConsumerWidget {
+class CrimeCheckPage extends ConsumerStatefulWidget {
   const CrimeCheckPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CrimeCheckPage> createState() => _CrimeCheckPageState();
+}
+
+class _CrimeCheckPageState extends ConsumerState<CrimeCheckPage> {
+  final _field = TextEditingController();
+
+  @override
+  void dispose() {
+    _field.dispose();
+    super.dispose();
+  }
+
+  /// Searches, then shows the postcode as it was understood, e.g. `WA1 1UH`.
+  void _search(String input) {
+    final text =
+        ref.read(crimeCheckViewModelProvider.notifier).search(input)?.value ??
+        input;
+    _field.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(crimeCheckViewModelProvider);
-    final viewModel = ref.read(crimeCheckViewModelProvider.notifier);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -29,6 +53,7 @@ class CrimeCheckPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 TextField(
+                  controller: _field,
                   autofocus: true,
                   textCapitalization: TextCapitalization.characters,
                   textInputAction: TextInputAction.search,
@@ -42,7 +67,13 @@ class CrimeCheckPage extends ConsumerWidget {
                       _ => null,
                     },
                   ),
-                  onSubmitted: viewModel.search,
+                  onSubmitted: _search,
+                  // Stay in the field for the next search on desktop; on
+                  // touch, closing the keyboard reveals the results.
+                  onEditingComplete: switch (defaultTargetPlatform) {
+                    TargetPlatform.android || TargetPlatform.iOS => null,
+                    _ => () {},
+                  },
                 ),
                 const SizedBox(height: 32),
                 switch (state) {
@@ -62,7 +93,7 @@ class CrimeCheckPage extends ConsumerWidget {
                     Icons.error_outline,
                     state.message,
                     action: FilledButton(
-                      onPressed: () => viewModel.search(state.postcode.value),
+                      onPressed: () => _search(state.postcode.value),
                       child: const Text('Try again'),
                     ),
                   ),
