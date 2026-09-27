@@ -101,7 +101,7 @@ With more time I'd check next:
 | `EH1 1YZ` | Not covered message; no request to data.police.uk (DevTools Network) |
 | `IM1 1AE` | Not covered message (no coordinates for the Isle of Man) |
 | `ZZ9 9ZZ` | "Postcode not found." |
-| `W1D 3QU` (Soho) | About 5,000 crimes a month: a spinner for around 10s, then results |
+| `W1D 3QU` (Soho) | About 5,000 crimes a month: a spinner with "Busy areas can take up to 15 seconds", then results |
 | `WA1 1` | "Enter a full UK postcode" under the field; no request |
 | DevTools offline, search | Spinner, 3 attempts, then an error with Try again; back online, Try again shows results |
 | Search A, then B, then A | The third search is instant (cached) |
@@ -113,6 +113,7 @@ With more time I'd check next:
 - One month against the last is noisy. The 5% threshold is a judgement call. Next: a 12-month trend.
 - Areas with over 10,000 crimes a month can't be shown, and the busiest areas that can take about 12s, close to the 15s timeout. Next: query a smaller custom area.
 - On GitHub Pages the wasm renderer runs single-threaded, because Pages can't send the cross-origin isolation headers. It logs a console warning.
+- Loading is a spinner and an honest hint. Next: a skeleton in the shape of the results, and loading steps driven by real progress from the repository rather than a timer.
 - Not done: accessibility review, localisation, persistence, error reporting, and browser E2E tests in CI.
 
 ## How AI was used
